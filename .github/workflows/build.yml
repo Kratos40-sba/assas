@@ -1,0 +1,36 @@
+name: Build Windows Release
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64 zip
+
+    - name: Install Rust target
+      run: rustup target add x86_64-pc-windows-gnu
+
+    - name: Build and Package
+      run: |
+        chmod +x scripts/build_windows.sh
+        ./scripts/build_windows.sh
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: assas-windows-package
+        path: target/x86_64-pc-windows-gnu/assas-windows.zip
