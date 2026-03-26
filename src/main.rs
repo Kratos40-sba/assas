@@ -10,15 +10,14 @@ use modules::config::Config;
 use modules::ui;
 use std::sync::Arc;
 use tokio::sync::mpsc;
-use fs2::FileExt;
 use std::fs;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // 0. Singleton Check (simple file lock)
     let lock_path = std::env::temp_dir().join("assas.lock");
-    let _lock = std::fs::File::create(&lock_path)?;
-    if let Err(_) = fs2::FileExt::try_lock_exclusive(&_lock) {
+    let lock = fs::File::create(&lock_path)?;
+    if let Err(_) = fs2::FileExt::try_lock_exclusive(&lock) {
         // App already running, exit silently
         return Ok(());
     }
@@ -34,7 +33,7 @@ async fn main() -> Result<()> {
     };
     std::fs::create_dir_all(&log_dir).ok();
     let log_file = log_dir.join("logs.txt");
-    if let Ok(file) = std::fs::OpenOptions::new().create(true).append(true).open(log_file) {
+    if let Ok(_file) = std::fs::OpenOptions::new().create(true).append(true).open(log_file) {
         // Note: For a real production app, use a logging crate like 'log' or 'tracing'
         // For simplicity here, we use a simple redirection if possible, 
         // or just acknowledge we should be silent.
